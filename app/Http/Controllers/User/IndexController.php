@@ -4,7 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Model\UserModel;
+use App\Model\UserModel;                //UserModel
+use App\Model\AppModel;                 //AppModel
 use Illuminate\Support\Facades\Hash;
 
 class IndexController extends Controller
@@ -39,39 +40,52 @@ class IndexController extends Controller
 
         //使用门面Hash中make()方法来将密码进行加密。
         $data['com_password'] = Hash::make($pass);
-
-        //获取APPID
-        $str1 = '013abcde';
-        $str2 = 'hjk89lp';
-        $appid = str_shuffle($str1).mt_rand(11111,99999).str_shuffle($str2);
-        //dd($appid);
-
-        //获取SECRET
-        $str3 = 'abcdefg12345hijklmn67890opqrstuvwxyz';
-        $appsecret = str_shuffle($str3);
-        //dd($appsecret);
+        $com_legal = $data['com_legal'];
 
         $user_data = [
             'com_name'              => $data['com_name'],
-            'com_legal'             => $data['com_legal'],
+            'com_legal'             => $com_legal,
             'com_address'           => $data['com_address'],
             'com_logo'              => $data['com_logo'],
             'com_mobile'            => $data['com_mobile'],
             'com_email'             => $data['com_email'],
             'com_password'          => $data['com_password'],
-            'appid'                  => $appid,
-            'appsecret'             => $appsecret
         ];
-
         //dd($user_data);
 
-        //数据入库
+        //将用户注册写入数据p_users表中
         $res = UserModel::create($user_data);
-        if($res){
-            echo "<script>alert('注册成功');location.href='/user/login'</script>";
+        if(!empty($res)){
+            header('Refresh:3;url=/user/login');
+            echo "注册成功";
         }else{
-            echo "<script>alert('注册失败');location.href='/user/register'</script>";
+            header('Refresh:3;url=/user/register');
+            echo "注册失败";
         }
+
+        //为用户生成APPID
+        $appid = UserModel::generateAppid($com_legal);
+        //echo "为用户生成的APPID：".$appid;echo "<br>";
+
+        //为用户生成APP SECRET
+        $app_secret = UserModel::generateSecret();
+        //echo "为用户生成的APP SECRET：".$app_secret;
+
+        //将APPID和APPSECRET写入数据库p_app表中
+        $appInfo = [
+            'uid'           => $res['id'],
+            'app_id'        => $appid,
+            'app_secret'    => $app_secret
+        ];
+
+        $result = AppModel::create($appInfo);
+        //dd($result);
+        if(!empty($result)){
+            echo "OK";
+        }else{
+            echo "服务器内部错误，请尽快联系管理员解决";
+        }
+
     }
 
     /**
