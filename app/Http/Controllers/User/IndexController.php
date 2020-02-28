@@ -59,10 +59,10 @@ class IndexController extends Controller
         //将用户注册写入数据p_users表中
         $res = UserModel::create($user_data);
         if(!empty($res)){
-            header('Refresh:3;url=/user/login');
+            header('Refresh:2;url=/user/login');
             echo "注册成功";
         }else{
-            header('Refresh:3;url=/user/register');
+            header('Refresh:2;url=/user/register');
             echo "注册失败";
         }
 
@@ -125,9 +125,9 @@ class IndexController extends Controller
            die;
        }
 
-       //生成用户的token标识,并返回给客户端（存入到cookie中）
+        //生成用户的token标识,并返回给客户端（存入到cookie中）
         $user_token = Str::random(16);
-        echo "生成的token：".$user_token;
+        //echo "生成的token：".$user_token;
 
         Cookie::queue('Token',$user_token,60);
 
@@ -148,9 +148,7 @@ class IndexController extends Controller
         //设置redis的过期时间(1小时)
         Redis::expire($redis_hs_token,60*60);
 
-
-        echo "<script>alert('登录成功');location.href='/user/center'</script>";
-
+        header('Refresh:2;url=/user/center');
 
     }
 
@@ -180,14 +178,13 @@ class IndexController extends Controller
         $appInfo = AppModel::where(['uid' => $redis_hs_info['uid']])->first()->toArray();
         //echo "<pre>";print_r($appInfo);echo "</pre>";
 
-        echo "欢迎来到".$redis_hs_info['com_legal']."个人中心";echo "<hr>";
+        echo "欢迎来到".'【'.$redis_hs_info['com_legal'].'】'."个人中心";echo "<hr>";
         echo "APPID：".$appInfo['app_id'];echo "<br>";
         echo "APP SECRET：".$appInfo['app_secret'];echo "<br>";
 
 
 
     }
-
 
     /**
         *获取Access Token(并记录有效期)
@@ -247,8 +244,6 @@ class IndexController extends Controller
         return $response;
 
     }
-
-
 
     /**
         *文件上传

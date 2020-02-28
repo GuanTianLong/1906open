@@ -33,8 +33,13 @@ Route::prefix('/user')->group(function () {
     Route::post('/login','User\IndexController@loginDo');
     //用户中心
     Route::get('/center','User\IndexController@center');
+    //接口(获取Access Token)
+    Route::get('/getAccessToken','User\IndexController@getAccessToken');
+});
+
+//Api路由分组
+Route::prefix('/api')->group(function () {
 
 });
 
-//接口(获取Access Token)
-Route::get('/getAccessToken','User\IndexController@getAccessToken');
+
