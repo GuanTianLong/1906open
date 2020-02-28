@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Model\UserModel;                //UserModel
 use App\Model\AppModel;                 //AppModel
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cookie;   //Cookie
+use Illuminate\Support\Facades\Redis;    //Redis
 
 class IndexController extends Controller
 {
@@ -122,6 +125,28 @@ class IndexController extends Controller
            die;
        }
 
+       //生成用户的token标识,并返回给客户端（存入到cookie中）
+        $user_token = Str::random(18);
+        echo "生成的token：".$user_token;
+
+        Cookie::queue('Token',$user_token,60);
+
+        //将生成的token保存至redis中
+        $redis_hs_token = "redis_hs_token:".$user_token;
+
+        //存入用户的信息
+        $token_info = [
+            'uid'            => $user_info['id'],
+            'com_legal'     => $user_info['com_legal'],
+            'login_time'    => date('Y-m-d H:i:s')
+        ];
+
+
+        //设置redis的值
+        $arr=Redis::hMset($redis_hs_token,$token_info);
+        //设置redis的过期时间(1小时)
+        Redis::expire($redis_hs_token,60*60);
+
 
         echo "<script>alert('登录成功');location.href='/user/center'</script>";
 
@@ -129,11 +154,37 @@ class IndexController extends Controller
     }
 
     /**
-        *用户中心
+        *用户个人中心
      */
     public function center(){
+        //取出cookie中的token
+        $token = Cookie::get('Token');
+        //echo "Cooke中取出的token：".$token;
 
-        return view('user.center');
+        //判断Cookie中是否有token值
+        if(empty($token)){
+            header('Refresh:2;url=/user/login');
+            echo "请您先登录！";die;
+        }
+
+        //得到token,拼接redis的key
+        $redis_hs_token = 'redis_hs_token:'.$token;
+        //echo "Redis的key：".$redis_hs_token;echo "<br>";
+
+        //从redis中获取hash表中的所有数据
+        $redis_hs_info = Redis::hgetAll($redis_hs_token);
+        //print_r($redis_hs_info);echo "<br>";
+
+        //获取用户信息
+        $appInfo = AppModel::where(['uid' => $redis_hs_info['uid']])->first()->toArray();
+        //echo "<pre>";print_r($appInfo);echo "</pre>";
+
+        echo "欢迎来到".$redis_hs_info['com_legal']."个人中心";echo "<hr>";
+        echo "APPID：".$appInfo['app_id'];echo "<br>";
+        echo "APP SECRET：".$appInfo['app_secret'];echo "<br>";
+
+
+
     }
 
     /**
