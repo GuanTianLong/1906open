@@ -38,8 +38,9 @@ Route::prefix('/user')->group(function () {
 });
 
 //Api路由分组
-Route::prefix('/api')->group(function () {
-
+Route::prefix('/api')->middleware('open.access_token')->group(function () {
+    //测试Access Token
+    Route::get('/test1','Api\ApiController@test1');
 });
 
 

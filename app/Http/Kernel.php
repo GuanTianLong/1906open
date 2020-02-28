@@ -46,6 +46,8 @@ class Kernel extends HttpKernel
     /**
      * The application's route middleware.
      *
+     *路由中间件
+     *
      * These middleware may be assigned to groups or used individually.
      *
      * @var array
@@ -61,6 +63,7 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'open.access_token' => \App\Http\Middleware\AccessToken::class,
     ];
 
     /**

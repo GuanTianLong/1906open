@@ -149,6 +149,7 @@ class IndexController extends Controller
         Redis::expire($redis_hs_token,60*60);
 
         header('Refresh:2;url=/user/center');
+        echo "登录成功，正在跳转至个人中心....";
 
     }
 
@@ -216,7 +217,7 @@ class IndexController extends Controller
 
         //对Access Token进行加密(为了防止冲突)
         $access_token = sha1($str).md5($str);
-        //echo "Access Token：".$access_token;echo "<hr>";
+        //echo "Access Token：".$access_token;echo "<hr>";die;
 
         //拼接Redis的key
         $redis_hs_key = 'hs_access_token:'.$access_token;
