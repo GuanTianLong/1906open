@@ -35,3 +35,6 @@ Route::prefix('/user')->group(function () {
     Route::get('/center','User\IndexController@center');
 
 });
+
+//接口(获取Access Token)
+Route::get('/getAccessToken','User\IndexController@getAccessToken');

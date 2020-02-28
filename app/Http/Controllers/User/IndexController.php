@@ -126,7 +126,7 @@ class IndexController extends Controller
        }
 
        //生成用户的token标识,并返回给客户端（存入到cookie中）
-        $user_token = Str::random(18);
+        $user_token = Str::random(16);
         echo "生成的token：".$user_token;
 
         Cookie::queue('Token',$user_token,60);
@@ -142,8 +142,9 @@ class IndexController extends Controller
         ];
 
 
-        //设置redis的值
+        ////同时将多个field-value对设置到Redis的hash表中
         $arr=Redis::hMset($redis_hs_token,$token_info);
+
         //设置redis的过期时间(1小时)
         Redis::expire($redis_hs_token,60*60);
 
@@ -187,6 +188,68 @@ class IndexController extends Controller
 
     }
 
+
+    /**
+        *获取Access Token(并记录有效期)
+     */
+    public function getAccessToken(Request $request){
+
+        $appid          = $request->get('app_id');
+        $app_secret     = $request->get('app_secret');
+
+        //判断是否有参数
+        if(empty($appid) || empty($app_secret)){
+            echo "缺少参数！请输入参数.....";
+            die;
+        }
+
+        $appInfo = AppModel::where(['app_id' => $appid])->first()->toArray();
+        //echo "<pre>";print_r($appInfo);echo "</pre>";die;
+        if($app_secret != $appInfo['app_secret']){
+            echo "参数有误！请您输入正确的参数.....";
+            die;
+        }
+
+        //echo "APPID：".$appid;echo "<br>";
+        //echo "APP SECRET：".$app_secret;echo "<br>";
+
+        //为用户生成Access Token(供后续接口调用)
+        $str = $appid.$app_secret.time().mt_rand().Str::random(16);
+        //echo "Str：".$str;echo "<br>";
+
+        //对Access Token进行加密(为了防止冲突)
+        $access_token = sha1($str).md5($str);
+        //echo "Access Token：".$access_token;echo "<hr>";
+
+        //拼接Redis的key
+        $redis_hs_key = 'hs_access_token:'.$access_token;
+        //echo "redis_hs_key：".$redis_hs_key;
+
+        //存入信息
+        $appInfo = [
+            'appid'         => $appid,
+            'add_time'      => date('Y-m-d H:i:s')
+        ];
+
+        //同时将多个field-value对设置到Redis的hash表中
+        Redis::hMset($redis_hs_key,$appInfo);
+
+        //设置Redis的过期时间(1小时)
+        Redis::expire($redis_hs_key,7200);
+
+        //响应结果
+        $response = [
+                'errno'             => 0,                            //错误码
+                'Access Token'     => $access_token,                //Access Token
+                'expire'            => 7200                         //过期时间
+        ];
+
+        return $response;
+
+    }
+
+
+
     /**
         *文件上传
      */
@@ -200,4 +263,5 @@ class IndexController extends Controller
         }
         exit('未获取到上传文件或上传过程出错');
     }
+
 }
