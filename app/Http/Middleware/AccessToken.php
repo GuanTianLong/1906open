@@ -9,6 +9,8 @@ class AccessToken
     /**
      * Handle an incoming request.
      *
+     * 验证Access Token
+     *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
      * @return mixed

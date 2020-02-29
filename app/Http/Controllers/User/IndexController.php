@@ -237,7 +237,7 @@ class IndexController extends Controller
 
         //响应结果
         $response = [
-                'errno'             => 0,                            //错误码
+                'errcode'             => 0,                            //错误码
                 'Access Token'     => $access_token,                //Access Token
                 'expire'            => 7200                         //过期时间
         ];
