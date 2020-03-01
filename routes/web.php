@@ -43,4 +43,13 @@ Route::prefix('/api')->middleware('open.access_token')->group(function () {
     Route::get('/test1','Api\ApiController@test1');
 });
 
+//GITHUB路由分组
+Route::prefix('/github')->group(function () {
+    //GITHUB登录(本地测试)
+    Route::get('/index','GithubController@index');
+    //用户授权回跳的页面
+    Route::get('/callback1','GithubController@callback1');
+
+});
+
 

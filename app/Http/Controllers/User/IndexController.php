@@ -175,13 +175,19 @@ class IndexController extends Controller
         $redis_hs_info = Redis::hgetAll($redis_hs_token);
         //print_r($redis_hs_info);echo "<br>";
 
-        //获取用户信息
-        $appInfo = AppModel::where(['uid' => $redis_hs_info['uid']])->first()->toArray();
-        //echo "<pre>";print_r($appInfo);echo "</pre>";
+        echo "欢迎来到".'【'.$redis_hs_info['uid'].'】'."个人中心";echo "<hr>";
 
-        echo "欢迎来到".'【'.$redis_hs_info['com_legal'].'】'."个人中心";echo "<hr>";
-        echo "APPID：".$appInfo['app_id'];echo "<br>";
-        echo "APP SECRET：".$appInfo['app_secret'];echo "<br>";
+        //获取用户信息
+        $appInfo = AppModel::where(['uid' => $redis_hs_info['uid']])->first();
+        //echo "<pre>";print_r($appInfo);echo "</pre>";
+        if($appInfo){
+            echo "APPID：".$appInfo['app_id'];echo "<br>";
+            echo "APP SECRET：".$appInfo['app_secret'];echo "<br>";
+        }else{
+            echo "暂无信息";echo "<hr>";
+        }
+
+
 
 
 
